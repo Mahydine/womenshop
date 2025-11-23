@@ -21,6 +21,7 @@ public class ProductDaoImpl implements ProductDao {
                    c.id AS c_id, c.name AS c_name, c.discount_rate AS c_discount_rate, c.active_discount AS c_active_discount
             FROM product p
             JOIN category c ON p.category_id = c.id
+            WHERE active = 1
             ORDER BY p.name
             """;
 
@@ -151,18 +152,19 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     @Override
-    public void delete(int id) {
-        String sql = "DELETE FROM product WHERE id = ?";
+    public boolean delete(int id) {
+        String sql = "UPDATE product SET active = 0 WHERE id = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+            return rows > 0;
 
         } catch (SQLException e) {
-            // Si des lignes stock_operation référencent le produit, ON DELETE RESTRICT provoquera une erreur
             e.printStackTrace();
+            return false;
         }
     }
 

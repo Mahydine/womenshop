@@ -1,5 +1,6 @@
 package mahydine_yanis.womenshop.daoimpl;
 
+import mahydine_yanis.womenshop.model.Category;
 import mahydine_yanis.womenshop.model.Product;
 import mahydine_yanis.womenshop.model.StockOperation;
 import mahydine_yanis.womenshop.util.StockOperationType;
@@ -144,6 +145,68 @@ public class StockOperationDaoImpl implements StockOperationDao {
 
         return 0.0;
     }
+
+    @Override
+    public List<StockOperation> getAllOrderedByDate() {
+        List<StockOperation> result = new ArrayList<>();
+
+        String sql = """
+        SELECT
+            so.id,
+            so.quantity,
+            so.created_at,
+            so.unit_price,
+            so.type,
+            p.id AS p_id,
+            p.name AS p_name,
+            p.quantity AS p_quantity,
+            p.sell_price AS p_sell_price,
+            p.purchase_price AS p_purchase_price,
+            p.active AS p_active,
+            c.id AS c_id,
+            c.name AS c_name,
+            c.discount_rate AS c_discount_rate,
+            c.active_discount AS c_active_discount
+        FROM stock_operation so
+        JOIN product p ON so.product_id = p.id
+        JOIN category c ON p.category_id = c.id
+        ORDER BY so.created_at ASC, so.id ASC
+        """;
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                // reconstruire Category
+                Category c = new Category();
+                c.setId(rs.getInt("c_id"));
+                c.setName(rs.getString("c_name"));
+                c.setDiscountRate(rs.getDouble("c_discount_rate"));
+                c.setActiveDiscount(rs.getBoolean("c_active_discount"));
+
+                // reconstruire Product
+                Product p = new Product();
+                p.setId(rs.getInt("p_id"));
+                p.setName(rs.getString("p_name"));
+                p.setQuantity(rs.getInt("p_quantity"));
+                p.setSellPrice(rs.getDouble("p_sell_price"));
+                p.setPurchasePrice(rs.getDouble("p_purchase_price"));
+                p.setActive(rs.getBoolean("p_active"));
+                p.setCategory(c);
+
+                // StockOperation (on réutilise le mapRow existant)
+                StockOperation op = mapRow(rs, p);
+                result.add(op);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
 
     private StockOperation mapRow(ResultSet rs, Product product) throws SQLException {
         StockOperation op = new StockOperation();

@@ -14,4 +14,6 @@ public interface StockOperationDao {
     double getTotalIncome(); // somme des ventes (sell)
 
     double getTotalCost();   // somme des achats (buy)
+
+    List<StockOperation> getAllOrderedByDate();
 }

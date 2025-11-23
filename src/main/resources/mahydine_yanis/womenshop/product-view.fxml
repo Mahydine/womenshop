@@ -41,4 +41,24 @@
         </TableView>
     </center>
 
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <Button text="Add product" onAction="#onAddProduct"/>
+            <Button text="Edit selected" onAction="#onEditProduct"/>
+            <Button text="Delete selected" onAction="#onDeleteProduct"/>
+
+            <!-- Espace qui pousse les suivants à droite -->
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button text="Buy items" onAction="#onBuyProduct"/>
+            <Button text="Sell items" onAction="#onSellProduct"/>
+
+        </HBox>
+    </bottom>
+
 </BorderPane>

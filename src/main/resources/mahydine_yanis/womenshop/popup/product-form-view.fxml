@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="mahydine_yanis.womenshop.controller.ProductFormController"
+            prefWidth="500" prefHeight="220">
+
+    <top>
+        <Label fx:id="titleLabel"
+               text="Add product"
+               BorderPane.alignment="CENTER"
+               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10;"/>
+    </top>
+
+    <center>
+        <VBox spacing="8">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <HBox spacing="10">
+                <Label text="Name:" prefWidth="120"/>
+                <TextField fx:id="nameField" prefWidth="250"/>
+            </HBox>
+
+            <HBox spacing="10">
+                <Label text="Category:" prefWidth="120"/>
+                <ComboBox fx:id="categoryCombo" prefWidth="250"/>
+            </HBox>
+
+            <HBox spacing="10">
+                <Label text="Purchase price:" prefWidth="120"/>
+                <TextField fx:id="purchasePriceField" prefWidth="100"/>
+
+                <Label text="Sell price:"/>
+                <TextField fx:id="sellPriceField" prefWidth="100"/>
+            </HBox>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <Button text="Cancel" onAction="#onCancel"/>
+            <Button text="Save" onAction="#onSave"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>
