@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefHeight="720" prefWidth="1280" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mahydine_yanis.womenshop.controller.ProductController">
+
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <Label text="Category:"/>
+
+            <ComboBox fx:id="categoryFilter" prefWidth="200.0"/>
+
+            <!-- tri par prix -->
+            <Label text="Sort by price:"/>
+            <Button text="Asc" onAction="#onSortPriceAsc"/>
+            <Button text="Desc" onAction="#onSortPriceDesc"/>
+
+            <Button text="Clear filter" onAction="#onClearFilter"/>
+
+        </HBox>
+    </top>
+
+    <center>
+        <TableView fx:id="productTable" BorderPane.alignment="CENTER">
+            <columns>
+                <TableColumn fx:id="idColumn" prefWidth="100.0" text="ID" />
+                <TableColumn fx:id="nameColumn" prefWidth="300.0" text="Name" />
+                <TableColumn fx:id="quantityColumn" minWidth="100.0" prefWidth="100.0" text="Quantity" />
+                <TableColumn fx:id="sellPriceColumn" prefWidth="100.0" text="Sell Price" />
+                <TableColumn fx:id="purchasePriceColumn" prefWidth="100.0" text="Purchase Price" />
+                <TableColumn fx:id="categoryColumn" prefWidth="300.0" text="Category" />
+                <TableColumn fx:id="discountRateColumn" prefWidth="100.0" text="Discount %" />
+                <TableColumn fx:id="discountActiveColumn" prefWidth="100.0" text="Discount Active" />
+            </columns>
+        </TableView>
+    </center>
+
+</BorderPane>

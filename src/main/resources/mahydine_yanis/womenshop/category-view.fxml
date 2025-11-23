@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="mahydine_yanis.womenshop.controller.CategoryController" prefWidth="1280" prefHeight="720">
+
+    <top>
+        <Label text="Gestion des catégories" BorderPane.alignment="CENTER" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10;" />
+    </top>
+
+    <center>
+        <TableView fx:id="categoryTable" prefWidth="580" prefHeight="300">
+            <columns>
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="100"/>
+                <TableColumn fx:id="nameColumn" text="Nom" prefWidth="480"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <TextField fx:id="nameField" promptText="Nom de la catégorie" prefWidth="200"/>
+
+            <Button text="Ajouter" onAction="#onAddCategory"/>
+
+            <Button text="Supprimer la sélection" onAction="#onDeleteSelected"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>
