@@ -5,8 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-import mahydine_yanis.womenshop.model.Category;
-import mahydine_yanis.womenshop.model.Product;
+import mahydine_yanis.womenshop.model.*;
 
 public class ProductFormController {
 
@@ -24,6 +23,9 @@ public class ProductFormController {
 
     @FXML
     private TextField sellPriceField;
+
+    @FXML
+    private TextField sizeField;
 
     private final ObservableList<Category> categoryList = FXCollections.observableArrayList();
 
@@ -57,14 +59,22 @@ public class ProductFormController {
     public void setProduct(Product product) {
         this.product = product;
 
-        if (product.getName() != null) {
+        if (product != null && product.getName() != null) {
             nameField.setText(product.getName());
         }
-        if (product.getCategory() != null) {
+        if (product != null && product.getCategory() != null) {
             categoryCombo.getSelectionModel().select(product.getCategory());
         }
-        purchasePriceField.setText(String.valueOf(product.getPurchasePrice()));
-        sellPriceField.setText(String.valueOf(product.getSellPrice()));
+        if (product != null) {
+            purchasePriceField.setText(String.valueOf(product.getPurchasePrice()));
+            sellPriceField.setText(String.valueOf(product.getSalePrice()));
+
+            if (product instanceof Clothing clothing) {
+                sizeField.setText(String.valueOf(clothing.getSize()));
+            } else if (product instanceof Shoes shoes) {
+                sizeField.setText(String.valueOf(shoes.getSize()));
+            }
+        }
     }
 
     public boolean isOkClicked() {
@@ -86,11 +96,20 @@ public class ProductFormController {
         double sellPrice = Double.parseDouble(sellPriceField.getText().trim());
         Category category = categoryCombo.getSelectionModel().getSelectedItem();
 
-        product.setName(name);
-        product.setPurchasePrice(purchasePrice);
-        product.setSellPrice(sellPrice);
-        product.setCategory(category);
-        product.setActive(true);
+        Product preparedProduct = ensureProductMatchesCategory(category);
+        preparedProduct.setName(name);
+        preparedProduct.setPurchasePrice(purchasePrice);
+        preparedProduct.setSellPrice(sellPrice);
+        preparedProduct.setCategory(category);
+        preparedProduct.setActive(true);
+
+        if (preparedProduct instanceof Clothing clothing) {
+            clothing.setSize(Integer.parseInt(sizeField.getText().trim()));
+        } else if (preparedProduct instanceof Shoes shoes) {
+            shoes.setSize(Integer.parseInt(sizeField.getText().trim()));
+        }
+
+        this.product = preparedProduct;
 
         okClicked = true;
         dialogStage.close();
@@ -110,17 +129,25 @@ public class ProductFormController {
         if (categoryCombo.getSelectionModel().getSelectedItem() == null) {
             errors.append("- Category is required.\n");
         }
-        try {
-            double p = Double.parseDouble(purchasePriceField.getText().trim());
-            if (p <= 0) errors.append("- Purchase price must be > 0.\n");
-        } catch (NumberFormatException e) {
-            errors.append("- Purchase price must be numeric.\n");
+        Double purchasePrice = parseDouble(purchasePriceField.getText().trim(), "Purchase price", errors);
+        Double sellPrice = parseDouble(sellPriceField.getText().trim(), "Sell price", errors);
+
+        if (purchasePrice != null && sellPrice != null && purchasePrice > sellPrice) {
+            errors.append("- Purchase price cannot be greater than sale price.\n");
         }
-        try {
-            double s = Double.parseDouble(sellPriceField.getText().trim());
-            if (s <= 0) errors.append("- Sell price must be > 0.\n");
-        } catch (NumberFormatException e) {
-            errors.append("- Sell price must be numeric.\n");
+
+        Category category = categoryCombo.getSelectionModel().getSelectedItem();
+        if (category != null && needsSizeField(category)) {
+            Double parsedSize = parseDouble(sizeField.getText().trim(), "Size", errors);
+            if (parsedSize != null) {
+                int size = parsedSize.intValue();
+                if (isClothing(category) && (size < 34 || size > 54)) {
+                    errors.append("- Clothing size must be between 34 and 54.\n");
+                }
+                if (isShoes(category) && (size < 36 || size > 50)) {
+                    errors.append("- Shoes size must be between 36 and 50.\n");
+                }
+            }
         }
 
         if (errors.length() > 0) {
@@ -132,5 +159,59 @@ public class ProductFormController {
             return false;
         }
         return true;
+    }
+
+    private Double parseDouble(String value, String fieldName, StringBuilder errors) {
+        try {
+            double parsed = Double.parseDouble(value);
+            if (parsed < 0) {
+                errors.append("- ").append(fieldName).append(" cannot be negative.\n");
+                return null;
+            }
+            return parsed;
+        } catch (NumberFormatException e) {
+            errors.append("- ").append(fieldName).append(" must be numeric.\n");
+            return null;
+        }
+    }
+
+    private Product ensureProductMatchesCategory(Category category) {
+        if (product == null) {
+            return instantiateByCategory(category);
+        }
+
+        // Prevent type changes during edit
+        if (product instanceof Clothing && !isClothing(category)) {
+            throw new IllegalArgumentException("Cannot change product type from Clothing");
+        }
+        if (product instanceof Shoes && !isShoes(category)) {
+            throw new IllegalArgumentException("Cannot change product type from Shoes");
+        }
+        if (product instanceof Accessory && (isClothing(category) || isShoes(category))) {
+            throw new IllegalArgumentException("Cannot change product type from Accessory");
+        }
+        return product;
+    }
+
+    private Product instantiateByCategory(Category category) {
+        if (isClothing(category)) {
+            return new Clothing();
+        }
+        if (isShoes(category)) {
+            return new Shoes();
+        }
+        return new Accessory();
+    }
+
+    private boolean isClothing(Category category) {
+        return category != null && category.getName() != null && category.getName().equalsIgnoreCase("Clothing");
+    }
+
+    private boolean isShoes(Category category) {
+        return category != null && category.getName() != null && category.getName().equalsIgnoreCase("Shoes");
+    }
+
+    private boolean needsSizeField(Category category) {
+        return isClothing(category) || isShoes(category);
     }
 }

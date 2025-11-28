@@ -143,11 +143,10 @@ public class ProductController {
 
     @FXML
     private void onAddProduct() {
-        Product newProduct = new Product();
-        boolean ok = openProductDialog(newProduct, "Add product");
-        if (ok) {
-            productDao.save(newProduct);
-            productList.add(newProduct);
+        Product created = openProductDialog(null, "Add product");
+        if (created != null) {
+            productDao.save(created);
+            productList.add(created);
         }
     }
 
@@ -159,9 +158,9 @@ public class ProductController {
             return;
         }
 
-        boolean ok = openProductDialog(selected, "Edit product");
-        if (ok) {
-            productDao.update(selected);
+        Product updated = openProductDialog(selected, "Edit product");
+        if (updated != null) {
+            productDao.update(updated);
             productTable.refresh();
         }
     }
@@ -193,7 +192,7 @@ public class ProductController {
     }
 
 
-    private boolean openProductDialog(Product product, String title) {
+    private Product openProductDialog(Product product, String title) {
         try {
             FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("popup/product-form-view.fxml"));
             Scene scene = new Scene(loader.load());
@@ -208,16 +207,23 @@ public class ProductController {
             controller.setDialogStage(dialogStage);
             controller.setTitle(title);
             controller.setCategories(categoryDao.getAll());
-            controller.setProduct(product);
+            if (product == null) {
+                controller.setProduct(null);
+            } else {
+                controller.setProduct(product);
+            }
 
             dialogStage.showAndWait();
 
-            return controller.isOkClicked();
+            if (controller.isOkClicked()) {
+                return controller.getProduct();
+            }
+            return null;
 
         } catch (IOException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Error", "Cannot open product form dialog.");
-            return false;
+            return null;
         }
     }
 
@@ -340,12 +346,12 @@ public class ProductController {
 
 
     private double getEffectiveSellPrice(Product product) {
-        double base = product.getSellPrice();
+        double base = product.getEffectivePrice();
         Category cat = product.getCategory();
 
-        if (cat != null && cat.isActiveDiscount()) {
+        if (cat != null && cat.isActiveDiscount() && product.getDiscountPrice() == 0) {
             double rate = cat.getDiscountRate(); // ex: 0.30 pour 30 %
-            base = base * (1.0 - rate);
+            base = product.getSalePrice() * (1.0 - rate);
         }
         return base;
     }

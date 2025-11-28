@@ -5,7 +5,7 @@ import mahydine_yanis.womenshop.daoimpl.StockOperationDaoImpl;
 
 public class FinanceService {
 
-    private static final double INITIAL_CAPITAL = 10_000.0; // valeur unique
+    private static final double INITIAL_CAPITAL = 30_000.0; // capital initial du scénario
 
     private final StockOperationDao stockOperationDao = new StockOperationDaoImpl();
 

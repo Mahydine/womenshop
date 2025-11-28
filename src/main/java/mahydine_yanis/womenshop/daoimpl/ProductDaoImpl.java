@@ -1,7 +1,6 @@
 package mahydine_yanis.womenshop.daoimpl;
 
-import mahydine_yanis.womenshop.model.Category;
-import mahydine_yanis.womenshop.model.Product;
+import mahydine_yanis.womenshop.model.*;
 import mahydine_yanis.womenshop.util.Database;
 import mahydine_yanis.womenshop.dao.ProductDao;
 
@@ -175,7 +174,7 @@ public class ProductDaoImpl implements ProductDao {
         c.setDiscountRate(rs.getDouble("c_discount_rate"));
         c.setActiveDiscount(rs.getBoolean("c_active_discount"));
 
-        Product p = new Product();
+        Product p = createProductForCategory(c);
         p.setId(rs.getInt("id"));
         p.setName(rs.getString("name"));
         p.setQuantity(rs.getInt("quantity"));
@@ -185,5 +184,22 @@ public class ProductDaoImpl implements ProductDao {
         p.setCategory(c);
 
         return p;
+    }
+
+    /**
+     * Creates a concrete product instance based on category name. In a real
+     * schema the size would be persisted; here we provide safe defaults to keep
+     * the inheritance model consistent.
+     */
+    private Product createProductForCategory(Category category) {
+        if (category == null || category.getName() == null) {
+            return new Accessory();
+        }
+        String name = category.getName().toLowerCase();
+        return switch (name) {
+            case "clothing", "vetement", "robe" -> new Clothing();
+            case "shoes", "chaussure" -> new Shoes();
+            default -> new Accessory();
+        };
     }
 }

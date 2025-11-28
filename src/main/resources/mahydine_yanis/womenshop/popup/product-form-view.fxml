@@ -39,6 +39,11 @@
                 <Label text="Sell price:"/>
                 <TextField fx:id="sellPriceField" prefWidth="100"/>
             </HBox>
+
+            <HBox spacing="10">
+                <Label text="Size (Clothing 34-54 / Shoes 36-50):" prefWidth="220"/>
+                <TextField fx:id="sizeField" prefWidth="80" promptText="optional"/>
+            </HBox>
         </VBox>
     </center>
 
