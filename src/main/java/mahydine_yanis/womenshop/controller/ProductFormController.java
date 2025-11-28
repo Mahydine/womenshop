@@ -68,7 +68,6 @@ public class ProductFormController {
         if (product != null) {
             purchasePriceField.setText(String.valueOf(product.getPurchasePrice()));
             sellPriceField.setText(String.valueOf(product.getSalePrice()));
-            sellPriceField.setDisable(true); // Sale price is fixed and cannot be modified after creation
 
             if (product instanceof Clothing clothing) {
                 sizeField.setText(String.valueOf(clothing.getSize()));
