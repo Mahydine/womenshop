@@ -17,7 +17,9 @@ import mahydine_yanis.womenshop.dao.CategoryDao;
 import mahydine_yanis.womenshop.dao.ProductDao;
 import mahydine_yanis.womenshop.daoimpl.CategoryDaoImpl;
 import mahydine_yanis.womenshop.daoimpl.ProductDaoImpl;
+import mahydine_yanis.womenshop.model.Clothing;
 import mahydine_yanis.womenshop.model.Category;
+import mahydine_yanis.womenshop.model.Shoes;
 import mahydine_yanis.womenshop.model.Product;
 import javafx.scene.control.TextInputDialog;
 import mahydine_yanis.womenshop.service.FinanceService;
@@ -61,6 +63,9 @@ public class ProductController {
     private TableColumn<Product, String> categoryColumn;
 
     @FXML
+    private TableColumn<Product, String> attributesColumn;
+
+    @FXML
     private TableColumn<Product, Double> discountRateColumn;
 
     @FXML
@@ -87,6 +92,7 @@ public class ProductController {
         sellPriceColumn.setCellValueFactory(new PropertyValueFactory<>("sellPrice"));
         purchasePriceColumn.setCellValueFactory(new PropertyValueFactory<>("purchasePrice"));
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
+        attributesColumn.setCellValueFactory(cellData -> new SimpleStringProperty(describeAttributes(cellData.getValue())));
         // ces colonnes ont des données qui sont dans l'attribut "Category category" d'un produit
         discountRateColumn.setCellValueFactory(cellData -> new SimpleDoubleProperty(cellData.getValue().getCategory().getDiscountRate()).asObject());
         discountActiveColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCategory().isActiveDiscount() ? "Yes" : "No"));
@@ -173,6 +179,13 @@ public class ProductController {
             return;
         }
 
+        if (selected.getQuantity() > 0) {
+            showAlert(Alert.AlertType.ERROR,
+                    "Delete failed",
+                    "Product cannot be deleted: stock still available");
+            return;
+        }
+
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete product");
         confirm.setHeaderText("Delete product");
@@ -185,7 +198,7 @@ public class ProductController {
                 } else {
                     showAlert(Alert.AlertType.ERROR,
                             "Delete failed",
-                            "Unable to delete this product.");
+                            "Product cannot be deleted: stock still available");
                 }
             }
         });
@@ -265,8 +278,8 @@ public class ProductController {
         if (purchaseCost > currentCapital) {
             showAlert(
                     Alert.AlertType.ERROR,
-                    "Not enough capital",
-                    "You do not have enough capital to buy " + quantity +
+                    "Insufficient budget",
+                    "Insufficient budget to buy " + quantity +
                             " items of " + selected.getName() +
                             ".\nRequired: " + String.format("%.2f", purchaseCost) +
                             " | Available: " + String.format("%.2f", currentCapital)
@@ -354,6 +367,19 @@ public class ProductController {
             base = product.getSalePrice() * (1.0 - rate);
         }
         return base;
+    }
+
+    private String describeAttributes(Product product) {
+        if (product == null) {
+            return "";
+        }
+        if (product instanceof Clothing clothing) {
+            return "Size: " + clothing.getSize();
+        }
+        if (product instanceof Shoes shoes) {
+            return "Size: " + shoes.getSize();
+        }
+        return "-";
     }
 
     private void showAlert(Alert.AlertType type, String title, String message) {
