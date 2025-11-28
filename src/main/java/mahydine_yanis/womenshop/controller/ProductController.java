@@ -17,7 +17,9 @@ import mahydine_yanis.womenshop.dao.CategoryDao;
 import mahydine_yanis.womenshop.dao.ProductDao;
 import mahydine_yanis.womenshop.daoimpl.CategoryDaoImpl;
 import mahydine_yanis.womenshop.daoimpl.ProductDaoImpl;
+import mahydine_yanis.womenshop.model.Clothing;
 import mahydine_yanis.womenshop.model.Category;
+import mahydine_yanis.womenshop.model.Shoes;
 import mahydine_yanis.womenshop.model.Product;
 import javafx.scene.control.TextInputDialog;
 import mahydine_yanis.womenshop.service.FinanceService;
@@ -61,6 +63,9 @@ public class ProductController {
     private TableColumn<Product, String> categoryColumn;
 
     @FXML
+    private TableColumn<Product, String> attributesColumn;
+
+    @FXML
     private TableColumn<Product, Double> discountRateColumn;
 
     @FXML
@@ -87,6 +92,7 @@ public class ProductController {
         sellPriceColumn.setCellValueFactory(new PropertyValueFactory<>("sellPrice"));
         purchasePriceColumn.setCellValueFactory(new PropertyValueFactory<>("purchasePrice"));
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
+        attributesColumn.setCellValueFactory(cellData -> new SimpleStringProperty(describeAttributes(cellData.getValue())));
         // ces colonnes ont des données qui sont dans l'attribut "Category category" d'un produit
         discountRateColumn.setCellValueFactory(cellData -> new SimpleDoubleProperty(cellData.getValue().getCategory().getDiscountRate()).asObject());
         discountActiveColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCategory().isActiveDiscount() ? "Yes" : "No"));
@@ -143,11 +149,10 @@ public class ProductController {
 
     @FXML
     private void onAddProduct() {
-        Product newProduct = new Product();
-        boolean ok = openProductDialog(newProduct, "Add product");
-        if (ok) {
-            productDao.save(newProduct);
-            productList.add(newProduct);
+        Product created = openProductDialog(null, "Add product");
+        if (created != null) {
+            productDao.save(created);
+            productList.add(created);
         }
     }
 
@@ -159,9 +164,9 @@ public class ProductController {
             return;
         }
 
-        boolean ok = openProductDialog(selected, "Edit product");
-        if (ok) {
-            productDao.update(selected);
+        Product updated = openProductDialog(selected, "Edit product");
+        if (updated != null) {
+            productDao.update(updated);
             productTable.refresh();
         }
     }
@@ -171,6 +176,13 @@ public class ProductController {
         Product selected = productTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showAlert(Alert.AlertType.INFORMATION, "No selection", "Please select a product to delete.");
+            return;
+        }
+
+        if (selected.getQuantity() > 0) {
+            showAlert(Alert.AlertType.ERROR,
+                    "Delete failed",
+                    "Product cannot be deleted: stock still available");
             return;
         }
 
@@ -186,14 +198,14 @@ public class ProductController {
                 } else {
                     showAlert(Alert.AlertType.ERROR,
                             "Delete failed",
-                            "Unable to delete this product.");
+                            "Product cannot be deleted: stock still available");
                 }
             }
         });
     }
 
 
-    private boolean openProductDialog(Product product, String title) {
+    private Product openProductDialog(Product product, String title) {
         try {
             FXMLLoader loader = new FXMLLoader(HelloApplication.class.getResource("popup/product-form-view.fxml"));
             Scene scene = new Scene(loader.load());
@@ -208,16 +220,23 @@ public class ProductController {
             controller.setDialogStage(dialogStage);
             controller.setTitle(title);
             controller.setCategories(categoryDao.getAll());
-            controller.setProduct(product);
+            if (product == null) {
+                controller.setProduct(null);
+            } else {
+                controller.setProduct(product);
+            }
 
             dialogStage.showAndWait();
 
-            return controller.isOkClicked();
+            if (controller.isOkClicked()) {
+                return controller.getProduct();
+            }
+            return null;
 
         } catch (IOException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Error", "Cannot open product form dialog.");
-            return false;
+            return null;
         }
     }
 
@@ -259,8 +278,8 @@ public class ProductController {
         if (purchaseCost > currentCapital) {
             showAlert(
                     Alert.AlertType.ERROR,
-                    "Not enough capital",
-                    "You do not have enough capital to buy " + quantity +
+                    "Insufficient budget",
+                    "Insufficient budget to buy " + quantity +
                             " items of " + selected.getName() +
                             ".\nRequired: " + String.format("%.2f", purchaseCost) +
                             " | Available: " + String.format("%.2f", currentCapital)
@@ -340,14 +359,27 @@ public class ProductController {
 
 
     private double getEffectiveSellPrice(Product product) {
-        double base = product.getSellPrice();
+        double base = product.getEffectivePrice();
         Category cat = product.getCategory();
 
-        if (cat != null && cat.isActiveDiscount()) {
+        if (cat != null && cat.isActiveDiscount() && product.getDiscountPrice() == 0) {
             double rate = cat.getDiscountRate(); // ex: 0.30 pour 30 %
-            base = base * (1.0 - rate);
+            base = product.getSalePrice() * (1.0 - rate);
         }
         return base;
+    }
+
+    private String describeAttributes(Product product) {
+        if (product == null) {
+            return "";
+        }
+        if (product instanceof Clothing clothing) {
+            return "Size: " + clothing.getSize();
+        }
+        if (product instanceof Shoes shoes) {
+            return "Size: " + shoes.getSize();
+        }
+        return "-";
     }
 
     private void showAlert(Alert.AlertType type, String title, String message) {

@@ -1,7 +1,6 @@
 package mahydine_yanis.womenshop.daoimpl;
 
-import mahydine_yanis.womenshop.model.Category;
-import mahydine_yanis.womenshop.model.Product;
+import mahydine_yanis.womenshop.model.*;
 import mahydine_yanis.womenshop.model.StockOperation;
 import mahydine_yanis.womenshop.util.StockOperationType;
 import mahydine_yanis.womenshop.util.Database;
@@ -186,7 +185,7 @@ public class StockOperationDaoImpl implements StockOperationDao {
                 c.setActiveDiscount(rs.getBoolean("c_active_discount"));
 
                 // reconstruire Product
-                Product p = new Product();
+                Product p = createProductForCategory(c);
                 p.setId(rs.getInt("p_id"));
                 p.setName(rs.getString("p_name"));
                 p.setQuantity(rs.getInt("p_quantity"));
@@ -221,5 +220,17 @@ public class StockOperationDaoImpl implements StockOperationDao {
 
         op.setProduct(product);
         return op;
+    }
+
+    private Product createProductForCategory(Category category) {
+        if (category == null || category.getName() == null) {
+            return new Accessory();
+        }
+        String name = category.getName().toLowerCase();
+        return switch (name) {
+            case "clothing", "vetement", "robe" -> new Clothing();
+            case "shoes", "chaussure" -> new Shoes();
+            default -> new Accessory();
+        };
     }
 }

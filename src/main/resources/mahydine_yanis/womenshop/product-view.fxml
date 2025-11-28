@@ -35,6 +35,7 @@
                 <TableColumn fx:id="sellPriceColumn" prefWidth="100.0" text="Sell Price" />
                 <TableColumn fx:id="purchasePriceColumn" prefWidth="100.0" text="Purchase Price" />
                 <TableColumn fx:id="categoryColumn" prefWidth="300.0" text="Category" />
+                <TableColumn fx:id="attributesColumn" prefWidth="150.0" text="Attributes" />
                 <TableColumn fx:id="discountRateColumn" prefWidth="100.0" text="Discount %" />
                 <TableColumn fx:id="discountActiveColumn" prefWidth="100.0" text="Discount Active" />
             </columns>
